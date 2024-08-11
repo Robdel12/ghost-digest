@@ -1,15 +1,16 @@
 {
-  "name": "oto-tools",
+  "name": "ghost-digest",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "description": "",
+  "author": "Robert DeLuca",
+  "license": "MIT",
   "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "start": "node index.js",
     "build": "ncc build index.js --license licenses.txt -o dist"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "@actions/core": "^1.10.1",
     "@tryghost/admin-api": "^1.13.12",
@@ -18,6 +19,8 @@
     "showdown": "^2.1.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.1"
+    "@vercel/ncc": "^0.38.1",
+    "msw": "^2.3.5",
+    "vitest": "^2.0.5"
   }
 }

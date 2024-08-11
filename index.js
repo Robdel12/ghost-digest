@@ -10,18 +10,11 @@ const tags = core.getInput('tags') || 'Digest';
 const timezone = core.getInput('timezone') || 'America/Chicago';
 const title = core.getInput('title') || `${period.charAt(0).toUpperCase() + period.slice(1)} Digest`;
 
-// Initialize Ghost Admin API
-const api = new GhostAdminAPI({
-  url: ghostUrl,
-  key: process.env.GHOST_API_KEY,
-  version: 'v5.0'
-});
-
 function isPeriod(period) {
   return period.toLowerCase() === 'daily' || period.toLowerCase() === 'weekly';
 }
 
-async function fetchPosts() {
+async function fetchPosts(api) {
   try {
     if (debug) core.debug('Fetching posts from Ghost API...');
     let posts = await api.posts.browse();
@@ -52,7 +45,7 @@ function generateMarkdownDigest(posts, period) {
   return markdown;
 }
 
-async function generateDigests(startDate, period) {
+async function generateDigests(startDate, period, api) {
   if (debug) core.debug(`Generating ${period} digest starting from ${startDate}.`);
 
   // Determine the end date based on the period
@@ -71,7 +64,7 @@ async function generateDigests(startDate, period) {
 
   if (debug) core.debug(`Date range: ${start.toISOString()} to ${end.toISOString()}`);
 
-  let posts = await fetchPosts();
+  let posts = await fetchPosts(api);
   let filteredPosts = posts.filter(post => {
     let pubDate = moment(post.published_at).tz(timezone).startOf('day');
     return pubDate.isSameOrAfter(start) && pubDate.isBefore(end);
@@ -108,7 +101,14 @@ async function generateDigests(startDate, period) {
   }
 }
 
-async function run() {
+export async function run() {
+  // Initialize Ghost Admin API
+  const api = new GhostAdminAPI({
+    url: ghostUrl,
+    key: process.env.GHOST_API_KEY,
+    version: 'v5.0'
+  });
+
   try {
     let startDate;
     if (isPeriod(period)) {
@@ -123,10 +123,10 @@ async function run() {
     }
 
     if (debug) core.debug(`Starting digest generation with startDate: ${startDate} and period: ${period}`);
-    await generateDigests(startDate, period);
+    await generateDigests(startDate, period, api);
   } catch (error) {
     core.setFailed(`Action failed with error: ${error.message}`);
   }
 }
 
-await run();
+// await run();
